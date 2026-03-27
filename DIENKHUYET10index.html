@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Điền Khuyết 24 - PLAYTOEIC</title>
+    <style>
+        :root {
+            --peach: #ffb7b2;
+            --dark-peach: #ff8b94;
+            --black: #1a1a1a;
+            --gray: #2d2d2d;
+            --white: #ffffff;
+            --bright-green: #00ff00; /* Xanh lá cây tươi */
+            --red: #ff6b6b;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .master-audio-container {
+            background-color: var(--dark-peach);
+            padding: 5px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        #masterAudio {
+            width: 80%;
+            height: 30px;
+        }
+
+        .master-audio-container span {
+            color: var(--black);
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        header {
+            background-color: var(--black);
+            color: var(--peach);
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--peach);
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .word-bank-column {
+            flex: 1;
+            background-color: var(--gray);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            border: 2px solid var(--peach);
+        }
+
+        .word-group h3 {
+            color: var(--peach);
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,183,178,0.3);
+            text-transform: uppercase;
+        }
+
+        .words-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .draggable-word {
+            background-color: var(--peach);
+            color: var(--black);
+            padding: 5px 10px;
+            border-radius: 12px;
+            cursor: grab;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .draggable-word.used {
+            opacity: 0.2;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .content-column {
+            flex: 2.5;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        .exercise-block {
+            background-color: var(--gray);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 8px solid var(--peach);
+        }
+
+        .dialogue-section { margin-bottom: 25px; }
+
+        .dialogue-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            color: var(--peach);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .play-btn {
+            background-color: var(--peach);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .line { margin-bottom: 6px; line-height: 1.5; font-size: 0.95rem; }
+        .speaker { font-weight: bold; color: var(--peach); min-width: 45px; display: inline-block; }
+
+        .drop-zone {
+            display: inline-block;
+            min-width: 80px;
+            border-bottom: 2px dashed var(--peach);
+            text-align: center;
+            margin: 0 4px;
+            height: 20px;
+            vertical-align: bottom;
+            transition: color 0.3s;
+        }
+
+        .drop-zone.correct { 
+            color: var(--bright-green); /* Xanh lá tươi */
+            border-bottom: 2px solid var(--bright-green); 
+            font-weight: bold; 
+            text-shadow: none; /* Không viền sáng */
+        }
+
+        .drop-zone.wrong { border-bottom: 2px solid var(--red); animation: shake 0.3s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--peach); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="master-audio-container">
+    <span>AUDIO PLAYER:</span>
+    <audio id="masterAudio" controls src="https://res.cloudinary.com/do9hddivz/video/upload/v1774353286/dk10_ab7zao.mp3"></audio>
+</div>
+
+<header>ĐIỀN KHUYẾT 24 - PLAYTOEIC</header>
+
+<div class="main-layout">
+    <aside class="word-bank-column" id="wordBank"></aside>
+    <main class="content-column" id="exerciseContent"></main>
+</div>
+
+<script>
+    const rawWordList = [
+    // Nhóm (71 - 100)
+    "festival", "committee", "stage", "equipment", "fencing", "seating", "accounts", "extra", 
+    "booth", "exhibits", "demonstrations", "representative", "molding", "fitted", "caps", "discount",
+    "change", "manufacturers", "development", "designing", "control", "quality", "assignments",
+    "podcast", "agriculture", "dates", "exposition", "director", "nonprofit", "fertilizer", "yields",
+    "supervisor", "crew", "renovation", "issue", "replacements", "settled", "alignment", "proceed",
+    "evaluated", "auditors", "headquarters", "recordkeeping", "interact", "impressed", "strategies", "pitch",
+    "addition", "reservations", "overflow", "storage", "shift", "specials", "promote", "permanent",
+    "financial", "goods", "peak", "surge", "trend", "expert", "featured", "summit",
+    "coupons", "originally", "application", "Association", "approved", "attending", "limit",
+    "audition", "role", "script", "previous", "route", "recommend", "studio"
+    ];
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    const data = [
+{ title: "71 - 73", start: 8.0, end: 39.8, lines: [
+        { s: "W-Am", t: "The town's annual music (1)_______ is only a few months away, and our (2)_______ still has a lot of planning to do.", a: ["festival", "committee"] },
+        { s: "W-Am", t: "Fortunately, we can use the same (3)_______ and (4)_______ we've used in the past.", a: ["stage", "equipment"] },
+        { s: "W-Am", t: "However, we don't have enough (5)_______ to create a larger (6)_______ area.", a: ["fencing", "seating"] },
+        { s: "W-Am", t: "Eniola, since you're in charge of (7)_______, would you check today to see whether we have money for (8)_______ fencing?", a: ["accounts", "extra"] }
+    ]},
+    { title: "74 - 76", start: 83.2, end: 119.0, lines: [
+        { s: "W-Br", t: "Thanks for stopping by my (9)_______ . I hope you've been enjoying all the manufacturing (10)_______ and (11)_______.", a: ["booth", "exhibits", "demonstrations"] },
+        { s: "W-Br", t: "I'm a sales (12)_______ at LT Plastic Injectors. Today I'm delighted to show you one of our new injection (13)_______ machines.", a: ["representative", "molding"] },
+        { s: "W-Br", t: "It's currently (14)_______ with a mold to make plastic bottle (15)_______.", a: ["fitted", "caps"] },
+        { s: "W-Br", t: "We're offering a ten percent (16)_______ on orders for this machine just for attending.", a: ["discount"] }
+    ]},
+    { title: "77 - 79", start: 165.5, end: 202.0, lines: [
+        { s: "W-Am", t: "The company leadership has decided to make a major (17)_______ . Historically, we've been one of the largest (18)_______ of computer chips.", a: ["change", "manufacturers"] },
+        { s: "W-Am", t: "However, starting next month, our company will launch a research and (19)_______ division and start (20)_______ chips, too.", a: ["development", "designing"] },
+        { s: "W-Am", t: "We've decided to make this change to allow us to have more (21)_______ over the (22)_______ of the technology we produce.", a: ["control", "quality"] },
+        { s: "W-Am", t: "As a result, some employees will have new work (23)_______ going forward.", a: ["assignments"] }
+    ]},
+    { title: "80 - 82", start: 247.0, end: 288.0, lines: [
+        { s: "M-Au", t: "Welcome to Ag-Cast—a (24)_______ all about the latest news in (25)_______.", a: ["podcast", "agriculture"] },
+        { s: "M-Au", t: "I'd like to note that I provided the wrong (26)_______ for the Farming (27)_______ during last week's episode.", a: ["dates", "exposition"] },
+        { s: "M-Au", t: "Ms. Junko Adachi is the (28)_______ at Fertilizer-ONE—a (29)_______ organization that provides small farms with low-cost (30)_______.", a: ["director", "nonprofit", "fertilizer"] },
+        { s: "M-Au", t: "The organization has helped over 1,000 small farms increase their (31)_______!", a: ["yields"] }
+    ]},
+    { title: "83 - 85", start: 330.5, end: 367.0, lines: [
+        { s: "W-Br", t: "This is Susana, the (32)_______ of the construction (33)_______ working on your (34)_______ project.", a: ["supervisor", "crew", "renovation"] },
+        { s: "W-Br", t: "I'm calling because we've run into an (35)_______ with the front window (36)_______.", a: ["issue", "replacements"] },
+        { s: "W-Br", t: "Your house has (37)_______ over the years. Unfortunately, this has caused some frame (38)_______ issues.", a: ["settled", "alignment"] },
+        { s: "W-Br", t: "We'll need to know how to (39)_______ by tomorrow.", a: ["proceed"] }
+    ]},
+    { title: "86 - 88", start: 413.5, end: 451.0, lines: [
+        { s: "M-Cn", t: "Our bank branch was (40)_______ by (41)_______ from our (42)_______ last week.", a: ["evaluated", "auditors", "headquarters"] },
+        { s: "M-Cn", t: "They looked at everything from how we handle (43)_______ for accounts to how our bank tellers (44)_______ with customers.", a: ["recordkeeping", "interact"] },
+        { s: "M-Cn", t: "They were (45)_______ with the quality of our customer service.", a: ["impressed"] },
+        { s: "M-Cn", t: "I'd like all supervisors to talk to their staff about (46)_______ to (47)_______ our products.", a: ["strategies", "pitch"] }
+    ]},
+    { title: "89 - 91", start: 496.5, end: 534.5, lines: [
+        { s: "M-Au", t: "We have an unusually busy night ahead of us—due to the (48)_______ of six large group (49)_______.", a: ["addition", "reservations"] },
+        { s: "M-Au", t: "We'll set up for those first in the (50)_______ room. Tables will need to come out of (51)_______.", a: ["overflow", "storage"] },
+        { s: "M-Au", t: "Before you start your (52)_______, make sure to try tonight's (53)_______.", a: ["shift", "specials"] },
+        { s: "M-Au", t: "Be sure you (54)_______ the truffles dish. We'd like to see if this could be a (55)_______ menu item.", a: ["promote", "permanent"] }
+    ]},
+    { title: "92 - 94", start: 582.5, end: 625.5, lines: [
+        { s: "W-Am", t: "Welcome to WBCO (56)_______ news. Tonight, we're talking about the prices we pay online for (57)_______ and services.", a: ["financial", "goods"] },
+        { s: "W-Am", t: "We'll look at why you may pay more if you shop during times of (58)_______ demand.", a: ["peak"] },
+        { s: "W-Am", t: "Called (59)_______ pricing, this (60)_______ first started with computer software.", a: ["surge", "trend"] },
+        { s: "W-Am", t: "Our guest today is a leading (61)_______ on the topic. Last month he was the (62)_______ speaker at the International Economics (63)_______.", a: ["expert", "featured", "summit"] }
+    ]},
+    { title: "95 - 97", start: 677.2, end: 705.5, lines: [
+        { s: "M-Au", t: "I'm calling about our print order for (64)_______ . We (65)_______ said we needed them by Friday, but we now need them by Wednesday.", a: ["coupons", "originally"] },
+        { s: "M-Au", t: "Our (66)_______ to the National Florists (67)_______ was (68)_______.", a: ["application", "Association", "approved"] },
+        { s: "M-Au", t: "We'll be (69)_______ their annual Floral Show. We'd also like to change the (70)_______ to five items on the coupon.", a: ["attending", "limit"] }
+    ]},
+    { title: "98 - 100", start: 757.5, end: 793.0, lines: [
+        { s: "M-Cn", t: "Good news—you got your first television (71)_______! It's for a (72)_______ in a TV drama.", a: ["audition", "role"] },
+        { s: "M-Cn", t: "I've sent an e-mail with the (73)_______ and details. You should watch some videos of (74)_______ previous episodes.", a: ["script", "previous"] },
+        { s: "M-Cn", t: "Since you're new to the city, you might be wondering about the best bus (75)_______ to take.", a: ["route"] },
+        { s: "M-Cn", t: "I'd (76)_______ taking the yellow line to the last stop. It's a longer route, but it's closer to the (77)_______.", a: ["recommend", "studio"] }
+    ]}
+];
+
+    function init() {
+        const bank = document.getElementById('wordBank');
+        const content = document.getElementById('exerciseContent');
+        const masterAudio = document.getElementById('masterAudio');
+
+        for(let i=0; i<rawWordList.length; i+=30) {
+            const group = document.createElement('div');
+            group.className = 'word-group';
+            group.innerHTML = `<h3>NHÓM ${Math.floor(i/30)+1}</h3><div class="words-container"></div>`;
+            const container = group.querySelector('.words-container');
+            
+            let subList = rawWordList.slice(i, i+30);
+            shuffleArray(subList);
+
+            subList.forEach(w => {
+                const el = document.createElement('div');
+                el.className = 'draggable-word';
+                el.draggable = true;
+                el.innerText = w;
+                el.id = `word-${Math.random().toString(36).substr(2, 9)}`;
+                el.ondragstart = (e) => e.dataTransfer.setData("text", `${w}|${el.id}`);
+                container.appendChild(el);
+            });
+            bank.appendChild(group);
+        }
+
+        data.forEach(part => {
+            const block = document.createElement('div');
+            block.className = 'exercise-block';
+            let linesHtml = part.lines.map(line => {
+                let currentAnswers = Array.isArray(line.a) ? [...line.a] : [line.a];
+                let text = line.t.replace(/_______/g, () => {
+                    const ans = currentAnswers.shift();
+                    return `<span class="drop-zone" data-answer="${ans}"></span>`;
+                });
+                return `<div class="line"><span class="speaker">${line.s}:</span> ${text}</div>`;
+            }).join('');
+
+            block.innerHTML = `
+                <div class="dialogue-header">
+                    <button class="play-btn" data-start="${part.start}" data-end="${part.end}">▶</button>
+                    <span class="section-title">Đoạn ${part.title}</span>
+                </div>
+                ${linesHtml}
+            `;
+            content.appendChild(block);
+        });
+
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.ondragover = (e) => e.preventDefault();
+            zone.ondrop = (e) => {
+                const [word, elId] = e.dataTransfer.getData("text").split("|");
+                if (word === zone.dataset.answer) {
+                    zone.innerText = word;
+                    zone.className = 'drop-zone correct';
+                    document.getElementById(elId).classList.add('used');
+                } else {
+                    zone.classList.add('wrong');
+                    setTimeout(() => zone.classList.remove('wrong'), 500);
+                }
+            };
+        });
+
+        document.querySelectorAll('.play-btn').forEach(btn => {
+btn.onclick = () => {
+    const start = parseFloat(btn.dataset.start);
+    const end = parseFloat(btn.dataset.end);
+
+    const playSegment = () => {
+        masterAudio.currentTime = start;
+        masterAudio.play();
+
+        const checkTime = () => {
+            if (masterAudio.currentTime >= end) {
+                masterAudio.pause();
+                masterAudio.removeEventListener('timeupdate', checkTime);
+            }
+        };
+        masterAudio.addEventListener('timeupdate', checkTime);
+    };
+
+    if (masterAudio.readyState >= 1) {
+        playSegment();
+    } else {
+        masterAudio.addEventListener('loadedmetadata', playSegment, { once: true });
+    }
+};
+        });
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
